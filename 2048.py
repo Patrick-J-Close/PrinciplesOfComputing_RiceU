@@ -1,6 +1,7 @@
 """
 Clone of 2048 game.
 """
+# http://www.codeskulptor.org/#user41_P4CeSAZ17Y_28.py
 
 import poc_2048_gui
 import random

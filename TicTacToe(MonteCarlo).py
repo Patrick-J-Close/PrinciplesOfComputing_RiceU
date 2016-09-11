@@ -1,4 +1,4 @@
-# http://www.codeskulptor.org/#user42_4Y4zlpjEBh_9.py
+# http://www.codeskulptor.org/#user42_4Y4zlpjEBh_10.py
 
 """
 Monte Carlo Tic-Tac-Toe Player
@@ -50,7 +50,7 @@ def mc_update_scores(scores, board, player):
 
 def get_best_move(board, scores):
     """
-    finds the maximum score amoug the empty squares on a given grid and
+    finds the maximum score among the empty squares on a given grid and
     returns square position (row, column)
     """
     max_score = float('-inf')
@@ -69,7 +69,6 @@ def mc_move(board, player, trials):
     """
     generates random move for machine player given current board
     """
-    print(board)
     scores = []
     dim = board.get_dim()
     
@@ -91,4 +90,3 @@ def mc_move(board, player, trials):
 
 #provided.play_game(mc_move, NTRIALS, False)        
 #poc_ttt_gui.run_gui(3, provided.PLAYERX, mc_move, NTRIALS, False)
-

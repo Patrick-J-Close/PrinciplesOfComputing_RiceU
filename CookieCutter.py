@@ -4,19 +4,87 @@
 Cookie Clicker Simulator
 """
 
-import simpleplot
+#import simpleplot
 import math
 import random
 
 # Used to increase the timeout, if necessary
-import codeskulptor
-codeskulptor.set_timeout(20)
+#import codeskulptor
+#codeskulptor.set_timeout(20)
 
-import poc_clicker_provided as provided
+#import poc_clicker_provided as provided
 
 # Constants
 INITIAL_CPS = 1.0
 SIM_TIME = 10000000000.0
+
+# http://www.codeskulptor.org/#poc_clicker_provided.py
+
+"""
+Cookie Clicker Simulator Build Information
+"""
+
+BUILD_GROWTH = 1.15
+
+class BuildInfo:
+    """
+    Class to track build information.
+    """
+    
+    def __init__(self, build_info = None, growth_factor = BUILD_GROWTH):
+        self._build_growth = growth_factor
+        if build_info == None:
+            self._info = {"Cursor": [15.0, 0.1],
+                          "Grandma": [100.0, 0.5],
+                          "Farm": [500.0, 4.0],
+                          "Factory": [3000.0, 10.0],
+                          "Mine": [10000.0, 40.0],
+                          "Shipment": [40000.0, 100.0],
+                          "Alchemy Lab": [200000.0, 400.0],
+                          "Portal": [1666666.0, 6666.0],
+                          "Time Machine": [123456789.0, 98765.0],
+                          "Antimatter Condenser": [3999999999.0, 999999.0]}
+        else:
+            self._info = {}
+            for key, value in build_info.items():
+                self._info[key] = list(value)
+
+        self._items = sorted(self._info.keys())
+            
+    def build_items(self):
+        """
+        Get a list of buildable items
+        """
+        return list(self._items)
+            
+    def get_cost(self, item):
+        """
+        Get the current cost of an item
+        Will throw a KeyError exception if item is not in the build info.
+        """
+        return self._info[item][0]
+    
+    def get_cps(self, item):
+        """
+        Get the current CPS of an item
+        Will throw a KeyError exception if item is not in the build info.
+        """
+        return self._info[item][1]
+    
+    def update_item(self, item):
+        """
+        Update the cost of an item by the growth factor
+        Will throw a KeyError exception if item is not in the build info.
+        """
+        cost, cps = self._info[item]
+        self._info[item] = [cost * self._build_growth, cps]
+        
+    def clone(self):
+        """
+        Return a clone of this BuildInfo
+        """
+        return BuildInfo(self._info, self._build_growth)
+
 
 class ClickerState:
     """
@@ -191,7 +259,6 @@ def strategy_expensive(cookies, cps, history, time_left, build_info):
     Always buy the most expensive item you can afford in the time left.
     """
     max_cookies = cookies + cps * time_left
-    items = build_info.build_items()
     name = None
     expensive = float('-inf')
     
@@ -208,14 +275,33 @@ def strategy_best(cookies, cps, history, time_left, build_info):
     """
     The best strategy that you are able to implement.
     """
+    new_click = ClickerState()
+    items = {}
+    term_cookies = float()
+    
+    for item in build_info.build_items():
+        time_to_item = new_click.time_until(build_info.get_cost(item))
+        if time_to_item < time_left:
+            term_cookies = time_to_item * cps + (time_left - time_to_item) * \
+            build_info.get_cps(item)
+            items[item] = term_cookies
+
+    #print(items)
+    return max(items, key = items.get) if any(items) else None
+    
+def strategy_random(cookies, cps, history, time_left, build_info):
+    """
+    random selection of new item
+    """
     return random.choice(build_info.build_items())
         
 def run_strategy(strategy_name, time, strategy):
     """
     Run a simulation for the given time with one strategy.
     """
-    state = simulate_clicker(provided.BuildInfo(), time, strategy)
-    print strategy_name, ":", state
+    # provided.BuildInfo()
+    state = simulate_clicker(BuildInfo(), time, strategy)
+    print (strategy_name, ":", state)
 
     # Plot total cookies over time
 
@@ -234,10 +320,11 @@ def run():
     #run_strategy("None", SIM_TIME, strategy_none)
 
     # Add calls to run_strategy to run additional strategies
-    #run_strategy("Cheap", SIM_TIME, strategy_cheap)
-    #run_strategy("Expensive", SIM_TIME, strategy_expensive)
-    #run_strategy("Best", SIM_TIME, strategy_best)
+    run_strategy("Cheap", SIM_TIME, strategy_cheap)
+    run_strategy("Expensive", SIM_TIME, strategy_expensive)
+    run_strategy("Best", SIM_TIME, strategy_best)
+    run_strategy("Random", SIM_TIME, strategy_random)
     
-#run()
+run()
     
 
